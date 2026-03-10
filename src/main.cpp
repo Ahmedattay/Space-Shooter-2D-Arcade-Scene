@@ -3,10 +3,11 @@
  *
  *  Assignment 1 - 2D Mini Arcade Game: Space Shooter (Static Scene)
  *  ----------------------------------------------------------------
- *  3 Main Objects (3 team members):
- *    1. Spaceship   (Player)      – Spaceship.cpp
- *    2. Alien Enemy (Enemy)       – Alien.cpp
- *    3. Planet      (Background)  – Background.cpp
+ *  4 Main Objects (4 team members):
+ *    1. Spaceship   (Player)      – Spaceship.cpp  Z = -1
+ *    2. Alien Enemy (Enemy)       – Alien.cpp      Z = -3
+ *    3. Asteroid    (Hazard)      – Asteroid.cpp   Z = -2
+ *    4. Planet      (Background)  – Background.cpp Z = -5
  *
  *  Controls:
  *    O / o   -> Orthographic Projection
@@ -20,14 +21,15 @@
 
 #include "Spaceship.h"
 #include "Alien.h"
+#include "Asteroid.h"
 #include "Background.h"
 #include "HUD.h"
 
-// ---------------------------------------------------------------
-//  Constants
-// ---------------------------------------------------------------
-static const int   WIN_W  = 800;
-static const int   WIN_H  = 600;
+ // ---------------------------------------------------------------
+ //  Constants
+ // ---------------------------------------------------------------
+static const int   WIN_W = 800;
+static const int   WIN_H = 600;
 static const float ASPECT = static_cast<float>(WIN_W) / WIN_H;
 
 // ---------------------------------------------------------------
@@ -64,8 +66,8 @@ static void setupCamera()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0.0, 0.0, 1.0,      // eye
-              0.0, 0.0, 0.0,      // center
-              0.0, 1.0, 0.0);     // up
+        0.0, 0.0, 0.0,      // center
+        0.0, 1.0, 0.0);     // up
 }
 
 // ---------------------------------------------------------------
@@ -80,8 +82,9 @@ static void display()
 
     // Draw scene layers (back to front)
     drawBackground();      // Z = -5  (farthest)
-    drawAlien();           // Z = -3  (middle)
-    drawSpaceship();       // Z = -1  (closest)
+    drawAlien();           // Z = -3  (enemy)
+    drawAsteroid();        // Z = -2  (hazard, left & right sides)
+    drawSpaceship();       // Z = -1  (closest / player)
 
     // HUD overlay
     if (usePerspective)
@@ -100,18 +103,18 @@ static void display()
 static void keyboard(unsigned char key, int /*x*/, int /*y*/)
 {
     switch (key) {
-        case 'o': case 'O':
-            usePerspective = false;
-            printf("[Key] Switched to ORTHOGRAPHIC projection\n");
-            break;
-        case 'p': case 'P':
-            usePerspective = true;
-            printf("[Key] Switched to PERSPECTIVE projection\n");
-            break;
-        case 27:
-            printf("[Key] ESC pressed – exiting\n");
-            exit(0);
-            break;
+    case 'o': case 'O':
+        usePerspective = false;
+        printf("[Key] Switched to ORTHOGRAPHIC projection\n");
+        break;
+    case 'p': case 'P':
+        usePerspective = true;
+        printf("[Key] Switched to PERSPECTIVE projection\n");
+        break;
+    case 27:
+        printf("[Key] ESC pressed – exiting\n");
+        exit(0);
+        break;
     }
     glutPostRedisplay();
 }
@@ -135,7 +138,7 @@ static void initGL()
         exit(1);
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.02f, 0.0f, 0.08f, 1.0f);   // dark space
+    glClearColor(0.022f, 0.055f, 0.085f, 1.0f);   // dark teal space
 }
 
 // ---------------------------------------------------------------
