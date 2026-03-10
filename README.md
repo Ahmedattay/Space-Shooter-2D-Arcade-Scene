@@ -4,7 +4,7 @@ https://docs.google.com/videos/d/104iQ5FOZJ7Um5Kq9gRGmec8zvOBBN8RP1wfosm3Kigs/ed
 
 A static 2D space-shooter scene built with **OpenGL (GLUT/GLEW)** for the Computer Graphics course (Spring 2026, Assignment 1).
 
-Inspired by classic top-down arcade space shooters, the scene is rendered from a **top-down perspective** with the player ship at the bottom firing upward at an enemy ship, against a richly detailed deep-space background.
+Inspired by classic top-down arcade space shooters, the scene is rendered from a **top-down perspective** with the player ship at the bottom firing upward at an enemy ship, with asteroid hazards on both sides, against a richly detailed deep-space background.
 
 ---
 
@@ -22,19 +22,18 @@ Inspired by classic top-down arcade space shooters, the scene is rendered from a
 
 ## Scene Layers
 
-The scene features three layered objects rendered at different Z-depths:
+The scene features four layered objects rendered at different Z-depths:
 
 | Layer | Z-Depth | Object | Description |
 |-------|---------|--------|-------------|
-| Background | -5 | Space Environment | Dark teal space sky, asteroid clusters, nebula dust, 32 glowing stars, and coloured particle specks |
-| Middle | -3 | Enemy Ship (Alien) | Top-down red/crimson enemy spacecraft facing downward, with swept wings, glowing orange engines, dark cockpit, wing guns, and hull panel detail |
-| Front | -1 | Player Spaceship | Top-down beige/tan fighter jet facing upward, with delta wings, twin blue engine flames, teal cockpit canopy, wing cannon barrels, hull panels, and 3 orange projectile bullets |
+| Background | -5 | Space Environment | Dark teal space sky, nebula dust, 32 glowing stars, and coloured particle specks |
+| Enemy | -3 | Enemy Ship (Alien) | Top-down red/crimson enemy spacecraft facing downward, with swept wings, glowing orange engines, dark cockpit, and wing guns |
+| Hazard | -2 | Asteroids | Two large rocky asteroids on the left and right sides, each with craters, debris chunks, and glowing cracks |
+| Front | -1 | Player Spaceship | Top-down beige/tan fighter jet facing upward, with delta wings, twin blue engine flames, teal cockpit canopy, wing cannons, and 3 bullets |
 
 ---
 
 ## Visual Design
-
-Each object was redesigned to match a **top-down arcade shooter aesthetic**, with layered primitives used to simulate shading, highlights, and depth.
 
 ### Player Spaceship (Z = -1)
 - **Fuselage**: 3-layer warm tan/beige body (shadow → base → centre highlight stripe)
@@ -53,12 +52,19 @@ Each object was redesigned to match a **top-down arcade shooter aesthetic**, wit
 - **Detail**: Horizontal seam lines, vertical spine panel, side panel boxes
 - **Weapons**: Wing-mounted gun barrels with glowing orange muzzle tips
 
+### Asteroids (Z = -2)
+- **Two rocks**: One on the left side (`-0.72, 0.05`), one on the right side (`0.74, 0.20`)
+- **Silhouette**: Irregular rocky shape built from 5 overlapping offset circles
+- **Shading**: Dark shadow base → mid-tone grey surface → lit face highlight
+- **Craters**: 3–4 craters per rock, each with a dark pit + lighter rim + specular glint
+- **Cracks**: Thin bright triangle streaks simulating glowing surface fractures
+- **Debris**: 3 floating chunk pieces + 3 tiny pebbles scattered around each rock
+
 ### Background (Z = -5)
 - **Sky**: Deep dark teal base with subtle lighter centre and vignette edges
-- **Stars**: 32 scattered stars, each with a soft halo glow ring
-- **Asteroids**: 3 clusters of grey rocky bodies (upper-left, upper-right, side debris) — each asteroid has shadow, surface highlight, and crater detail
+- **Stars**: 32 scattered stars each with a soft halo glow ring
 - **Nebulae**: Faint teal ellipse ring dust patches on left and right sides
-- **Particles**: Red/orange glow speck (left), cyan glow speck (right), and 6 scattered teal pixel dots
+- **Particles**: Red/orange glow speck, cyan glow speck, and scattered teal pixel dots
 
 ---
 
@@ -66,12 +72,12 @@ Each object was redesigned to match a **top-down arcade shooter aesthetic**, wit
 
 | Primitive | OpenGL Mode | Used For |
 |-----------|-------------|----------|
-| **Circle** | `GL_TRIANGLE_FAN` | Cockpit, engine glow, stars, asteroids, particles, bullet glow |
-| **Rectangle** | `GL_QUADS` | Fuselage, hull panels, engine pods, sky layers, wing seams |
-| **Triangle** | `GL_TRIANGLES` | Nose cone, wings, tail fins, engine flames, bullets |
+| **Circle** | `GL_TRIANGLE_FAN` | Cockpit, engine glow, stars, asteroid body, craters, debris, particles |
+| **Rectangle** | `GL_QUADS` | Fuselage, hull panels, engine pods, sky layers |
+| **Triangle** | `GL_TRIANGLES` | Nose cone, wings, tail fins, flames, bullets, asteroid crack lines |
 | **Ellipse Ring** | `GL_LINE_LOOP` | Engine glow rings, nebula outlines |
 
-All primitives support layered depth offsets (`Z`, `Z + 0.005`, `Z + 0.010`) to avoid z-fighting between detail layers drawn on the same object.
+All objects use Z sub-layer offsets (`Z`, `Z + 0.005`, `Z + 0.010`) to prevent z-fighting between detail layers on the same object.
 
 ---
 
@@ -81,6 +87,7 @@ All primitives support layered depth offsets (`Z`, `Z + 0.005`, `Z + 0.010`) to 
 Assignment_1/
 ├── include/
 │   ├── Alien.h             # Enemy ship interface
+│   ├── Asteroid.h          # Asteroid hazard interface  ← NEW
 │   ├── Background.h        # Space background interface
 │   ├── HUD.h               # On-screen text overlay
 │   ├── Primitives.h        # Reusable drawing helpers
@@ -88,7 +95,8 @@ Assignment_1/
 ├── src/
 │   ├── main.cpp            # Entry point, GLUT callbacks, projection setup
 │   ├── Alien.cpp           # Enemy ship drawing (top-down red spacecraft)
-│   ├── Background.cpp      # Background drawing (teal sky, asteroids, stars)
+│   ├── Asteroid.cpp        # Asteroid drawing (left & right rocky hazards)  ← NEW
+│   ├── Background.cpp      # Background drawing (teal sky, stars, nebulae)
 │   ├── HUD.cpp             # HUD text rendering
 │   ├── Primitives.cpp      # OpenGL primitive drawing functions
 │   └── Spaceship.cpp       # Player ship drawing (top-down tan fighter)
@@ -119,7 +127,7 @@ Assignment_1/
 ### Requirements
 
 - **Visual Studio 2022** (MSVC v143 toolset)
-- **GLEW** — OpenGL Extension Wrangler (include + lib configured in project properties)
+- **GLEW** — OpenGL Extension Wrangler
 - **GLUT / freeglut** — OpenGL Utility Toolkit
 
 ### Setting Up GLEW & GLUT
@@ -132,7 +140,13 @@ If you see `Cannot open include file: 'GL/glew.h'`:
    - **Linker → Additional Library Directories**: add `path\to\glew\lib\Release\x64`
    - **Linker → Additional Dependencies**: add `glew32s.lib`
    - **C/C++ → Preprocessor Definitions**: add `GLEW_STATIC`
-3. Repeat equivalent steps for freeglut: https://www.transmissionzero.co.uk/software/freeglut-devel/
+3. Repeat for freeglut: https://www.transmissionzero.co.uk/software/freeglut-devel/
+
+### Adding the New Asteroid Files to Visual Studio
+
+1. Right-click **Source Files** in Solution Explorer → **Add → Existing Item** → select `src/Asteroid.cpp`
+2. Right-click **Header Files** → **Add → Existing Item** → select `include/Asteroid.h`
+3. Rebuild (`Ctrl+Shift+B`)
 
 ### Build & Run
 
@@ -144,14 +158,12 @@ If you see `Cannot open include file: 'GL/glew.h'`:
 
 ## Team
 
-This assignment was developed as a 4-member team project. Each member was responsible for one main scene object:
-
 | # | Object | File |
 |---|--------|------|
 | 1 | Player Spaceship | `Spaceship.cpp` |
 | 2 | Enemy Ship (Alien) | `Alien.cpp` |
-| 3 | Space Background | `Background.cpp` |
-| 4 | HUD & Entry Point | `HUD.cpp`, `main.cpp` |
+| 3 | Asteroid Hazards | `Asteroid.cpp` |
+| 4 | Space Background | `Background.cpp` |
 
 ### Team Members
 
